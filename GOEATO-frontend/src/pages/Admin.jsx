@@ -2,15 +2,17 @@ import React, { useEffect, useState, useCallback } from 'react';
 import api, { unwrapList } from '../api/client';
 import { useSocketListener, useSocket } from '../context/SocketContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
-
-const STATUS_PIPELINE = ['placed', 'preparing', 'delivering', 'delivered'];
+import { ADMIN_TABS, ORDER_FILTERS, PAGINATION, TOAST_DURATIONS } from '../config/constants.js';
+import { IconAlert, IconBox, IconPin } from '../components/icons.jsx';
+import EmptyState from '../components/EmptyState.jsx';
+import { SkeletonCard } from '../components/SkeletonLoader.jsx';
 
 export default function Admin() {
-  const [activeTab, setActiveTab] = useState('orders'); // 'orders' | 'inventory' | 'create'
+  const [activeTab, setActiveTab] = useState(ADMIN_TABS[0]);
   const [orders, setOrders] = useState([]);
   const [foodItems, setFoodItems] = useState([]);
   const [restaurants, setRestaurants] = useState([]);
-  const [orderFilter, setOrderFilter] = useState('all');
+  const [orderFilter, setOrderFilter] = useState(ORDER_FILTERS[0]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -35,9 +37,9 @@ export default function Admin() {
   const loadData = useCallback(async () => {
     try {
       const [ordersRes, foodsRes, restsRes] = await Promise.all([
-        api.get('/api/orders/admin/all?limit=100'),
-        api.get('/api/food-items?limit=100'),
-        api.get('/api/restaurants?limit=50'),
+        api.get(`/api/orders/admin/all?limit=${PAGINATION.MAX_LIMIT}`),
+        api.get(`/api/food-items?limit=${PAGINATION.MAX_LIMIT}`),
+        api.get(`/api/restaurants?limit=${PAGINATION.DEFAULT_LIMIT}`),
       ]);
       setOrders(unwrapList(ordersRes.data));
       setFoodItems(Array.isArray(foodsRes.data) ? foodsRes.data : []);
@@ -68,16 +70,16 @@ export default function Admin() {
       }
       return [order, ...prev];
     });
-    addToast(`New order activity for Order #${order._id.slice(-6)}`, 'info');
+    addToast(`New order activity for Order #${order._id.slice(-6)}`, 'info', TOAST_DURATIONS.MEDIUM);
   });
 
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
       const { data } = await api.put(`/api/orders/${orderId}`, { status: newStatus });
       setOrders((prev) => prev.map((o) => (o._id === orderId ? { ...o, ...data } : o)));
-      addToast(`Order #${orderId.slice(-6)} marked as ${newStatus}`, 'success');
+      addToast(`Order #${orderId.slice(-6)} marked as ${newStatus}`, 'success', TOAST_DURATIONS.MEDIUM);
     } catch (err) {
-      addToast(err.response?.data?.message || 'Status update failed', 'error');
+      addToast(err.response?.data?.message || 'Status update failed', 'error', TOAST_DURATIONS.MEDIUM);
     }
   };
 
@@ -85,9 +87,9 @@ export default function Admin() {
     try {
       const { data } = await api.patch(`/api/food-items/${itemId}/toggle-availability`);
       setFoodItems((prev) => prev.map((item) => (item._id === itemId ? data : item)));
-      addToast(`"${data.name}" is now ${data.available ? 'In Stock' : 'Sold Out'}`, 'info');
+      addToast(`"${data.name}" is now ${data.available ? 'In Stock' : 'Sold Out'}`, 'info', TOAST_DURATIONS.MEDIUM);
     } catch (err) {
-      addToast('Failed to update availability', 'error');
+      addToast('Failed to update availability', 'error', TOAST_DURATIONS.MEDIUM);
     }
   };
 
@@ -139,7 +141,7 @@ export default function Admin() {
   };
 
   const filteredOrders = orders.filter((o) => {
-    if (orderFilter === 'all') return true;
+    if (orderFilter === ORDER_FILTERS[0]) return true;
     return o.status === orderFilter;
   });
 
@@ -151,40 +153,32 @@ export default function Admin() {
           <p className="section-subtitle">Manage incoming delivery orders, menus, and restaurants</p>
         </div>
         <div className="live-indicator">
-          <div className="live-indicator-dot" style={{ background: isConnected ? '#16A34A' : '#F59E0B' }} />
+          <div className="live-indicator-dot" style={{ background: isConnected ? 'var(--success)' : 'var(--warn)' }} />
           <span>{isConnected ? 'Real-time Sync Active' : 'Offline'}</span>
         </div>
       </div>
 
       {error && (
-        <div className="admin-order-card" style={{ borderLeft: '4px solid #EF4444', marginBottom: 20 }}>
-          <p style={{ color: '#DC2626' }}>{error}</p>
+        <div className="alert alert-error" role="alert" style={{ marginBottom: 20 }}>
+          <span className="alert-icon"><IconAlert size={16} /></span>
+          <span>{error}</span>
         </div>
       )}
 
       {/* Tabs */}
       <div className="admin-tabs">
-        <button
-          type="button"
-          className={`admin-tab-btn ${activeTab === 'orders' ? 'active' : ''}`}
-          onClick={() => setActiveTab('orders')}
-        >
-          Live Orders ({orders.filter((o) => o.status !== 'delivered' && o.status !== 'cancelled').length} active)
-        </button>
-        <button
-          type="button"
-          className={`admin-tab-btn ${activeTab === 'inventory' ? 'active' : ''}`}
-          onClick={() => setActiveTab('inventory')}
-        >
-          Menu & Inventory ({foodItems.length})
-        </button>
-        <button
-          type="button"
-          className={`admin-tab-btn ${activeTab === 'create' ? 'active' : ''}`}
-          onClick={() => setActiveTab('create')}
-        >
-          + Add Kitchen / Dish
-        </button>
+        {ADMIN_TABS.map((tab) => (
+          <button
+            key={tab}
+            type="button"
+            className={`admin-tab-btn ${activeTab === tab ? 'active' : ''}`}
+            onClick={() => setActiveTab(tab)}
+          >
+            {tab === 'orders' && `Live Orders (${orders.filter((o) => o.status !== 'delivered' && o.status !== 'cancelled').length} active)`}
+            {tab === 'inventory' && `Menu & Inventory (${foodItems.length})`}
+            {tab === 'create' && '+ Add Kitchen / Dish'}
+          </button>
+        ))}
       </div>
 
       {/* Tab 1: Live Orders */}
@@ -192,24 +186,27 @@ export default function Admin() {
         <div>
           {/* Order Filter Pills */}
           <div className="category-chips" style={{ marginBottom: 20 }}>
-            {['all', 'placed', 'preparing', 'delivering', 'delivered', 'cancelled'].map((st) => (
+            {ORDER_FILTERS.map((st) => (
               <button
                 key={st}
                 type="button"
                 className={`chip ${orderFilter === st ? 'active' : ''}`}
                 onClick={() => setOrderFilter(st)}
               >
-                {st === 'all' ? 'All Orders' : st}
+                {st === ORDER_FILTERS[0] ? 'All Orders' : st}
               </button>
             ))}
           </div>
 
           {loading ? (
-            <div className="skeleton-card" style={{ height: 200 }} />
+            <SkeletonCard height="200px" />
           ) : filteredOrders.length === 0 ? (
-            <div className="admin-order-card" style={{ textAlign: 'center', padding: 40, flexDirection: 'column' }}>
-              <h3>No orders match this status</h3>
-            </div>
+            <EmptyState
+              compact
+              icon={<IconBox size={24} />}
+              title="No orders match this status"
+              description="Try a different status filter to see other orders."
+            />
           ) : (
             filteredOrders.map((order) => {
               const nextStatus =
@@ -227,12 +224,12 @@ export default function Admin() {
                     <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 6 }}>
                       <strong style={{ fontSize: 16 }}>Order #{order._id.slice(-6).toUpperCase()}</strong>
                       <span className={`status-badge status-${order.status}`}>{order.status}</span>
-                      <span style={{ fontSize: 12, color: '#64748B' }}>
+                      <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
                         {new Date(order.createdAt).toLocaleTimeString()}
                       </span>
                     </div>
 
-                    <div style={{ fontSize: 14, color: '#334155', marginBottom: 6 }}>
+                    <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 6 }}>
                       {(order.items || []).map((it, i) => (
                         <span key={i} style={{ marginRight: 12 }}>
                           {it.quantity} &times; {it.foodItemId?.name || 'Item'}
@@ -240,8 +237,8 @@ export default function Admin() {
                       ))}
                     </div>
 
-                    <div style={{ fontSize: 13, color: '#64748B' }}>
-                      📍 {order.address || 'Address not specified'} • 💰 ₹{order.total} ({order.paymentMethod || 'COD'})
+                    <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+                       <IconPin size={13} /> {order.address || 'Address not specified'} •  ₹{order.total} ({order.paymentMethod || 'COD'})
                     </div>
                   </div>
 
@@ -277,7 +274,7 @@ export default function Admin() {
       {/* Tab 2: Menu & Inventory Control */}
       {activeTab === 'inventory' && (
         <div>
-          <p style={{ color: '#64748B', marginBottom: 16 }}>
+          <p style={{ color: 'var(--text-muted)', marginBottom: 16 }}>
             Toggle dish availability in real time. Items marked Sold Out cannot be added to customer carts.
           </p>
 
@@ -298,14 +295,14 @@ export default function Admin() {
                     <div className={`diet-icon ${item.veg !== false ? 'veg' : 'nonveg'}`} />
                     <h4 style={{ fontSize: 15, fontWeight: 700 }}>{item.name}</h4>
                   </div>
-                  <span style={{ fontSize: 13, color: '#64748B' }}>₹{item.price} • {item.category}</span>
+                  <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>₹{item.price} • {item.category}</span>
                 </div>
 
                 <button
                   type="button"
                   className={item.available !== false ? 'chip active' : 'chip'}
                   style={{
-                    background: item.available !== false ? '#16A34A' : '#EF4444',
+                    background: item.available !== false ? 'var(--success)' : 'var(--danger)',
                     color: '#fff',
                     borderColor: 'transparent',
                     cursor: 'pointer',

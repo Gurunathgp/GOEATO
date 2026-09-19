@@ -1,0 +1,16 @@
+import { useRef, useEffect } from 'react';
+
+/**
+ * Custom hook for getting the previous value of a state or prop
+ * @param {any} value - The current value
+ * @returns {any} - The previous value
+ */
+export function usePrevious(value) {
+  const ref = useRef();
+
+  useEffect(() => {
+    ref.current = value;
+  }, [value]);
+
+  return ref.current;
+}

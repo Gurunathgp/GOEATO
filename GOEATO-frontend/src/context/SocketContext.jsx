@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext.jsx';
+import { STORAGE_KEYS, SOCKET_CONFIG } from '../config/constants.js';
 
 const SocketContext = createContext(null);
 
@@ -10,7 +11,7 @@ export function SocketProvider({ children }) {
   const socketRef = useRef(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('goeato_token');
+    const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
     if (!token) {
@@ -24,9 +25,9 @@ export function SocketProvider({ children }) {
 
     const socket = io(apiUrl, {
       auth: { token },
-      transports: ['websocket', 'polling'],
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
+      transports: SOCKET_CONFIG.TRANSPORTS,
+      reconnectionAttempts: SOCKET_CONFIG.RECONNECTION_ATTEMPTS,
+      reconnectionDelay: SOCKET_CONFIG.RECONNECTION_DELAY,
     });
 
     socket.on('connect', () => {

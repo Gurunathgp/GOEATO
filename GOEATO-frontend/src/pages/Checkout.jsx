@@ -3,22 +3,25 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import api from '../api/client';
+import Button from '../components/Button.jsx';
+import { IconAlert, IconArrowRight, IconPin } from '../components/icons.jsx';
+import { PRICING, ADDRESS_TYPES, PAYMENT_METHODS, TOAST_DURATIONS } from '../config/constants.js';
 
 export default function Checkout() {
   const { items, total, clear } = useCart();
   const { addToast } = useToast();
   const navigate = useNavigate();
 
-  const [addressType, setAddressType] = useState('Home');
+  const [addressType, setAddressType] = useState(ADDRESS_TYPES[0]);
   const [address, setAddress] = useState('');
   const [instructions, setInstructions] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('cod');
+  const [paymentMethod, setPaymentMethod] = useState(PAYMENT_METHODS[0]);
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState('');
 
-  const deliveryFee = total > 400 ? 0 : 35;
-  const platformFee = items.length > 0 ? 5 : 0;
-  const taxes = Math.round(total * 0.05);
+  const deliveryFee = total > PRICING.FREE_DELIVERY_THRESHOLD ? 0 : PRICING.DELIVERY_FEE;
+  const platformFee = items.length > 0 ? PRICING.PLATFORM_FEE : 0;
+  const taxes = Math.round(total * PRICING.TAX_RATE);
   const grandTotal = total + deliveryFee + platformFee + taxes;
 
   if (!items.length) {
@@ -58,7 +61,7 @@ export default function Checkout() {
 
       const { data } = await api.post('/api/orders', payload);
       clear();
-      addToast('Order placed successfully! Tracking your delivery...', 'success', 4000);
+      addToast('Order placed successfully! Tracking your delivery...', 'success', TOAST_DURATIONS.LONG);
       navigate(`/orders?placed=${data._id}`);
     } catch (err) {
       const msg = err.response?.data?.message || 'Failed to place order. Please check login or item availability.';
@@ -86,14 +89,15 @@ export default function Checkout() {
             <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 16 }}>1. Delivery Address</h3>
 
             <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
-              {['Home', 'Work', 'Other'].map((type) => (
+              {ADDRESS_TYPES.map((type) => (
                 <button
                   key={type}
                   type="button"
                   className={`chip ${addressType === type ? 'active' : ''}`}
                   onClick={() => setAddressType(type)}
                 >
-                  📍 {type}
+                  <IconPin size={13} />
+                  {type}
                 </button>
               ))}
             </div>
@@ -131,18 +135,18 @@ export default function Checkout() {
                   alignItems: 'center',
                   gap: 12,
                   padding: '12px 16px',
-                  border: `2px solid ${paymentMethod === 'cod' ? 'var(--primary)' : 'var(--border-color)'}`,
+                  border: `2px solid ${paymentMethod === PAYMENT_METHODS[0] ? 'var(--primary)' : 'var(--border-color)'}`,
                   borderRadius: '12px',
                   cursor: 'pointer',
-                  background: paymentMethod === 'cod' ? 'var(--primary-light)' : '#fff',
+                  background: paymentMethod === PAYMENT_METHODS[0] ? 'var(--primary-light)' : '#fff',
                 }}
               >
                 <input
                   type="radio"
                   name="payment"
-                  value="cod"
-                  checked={paymentMethod === 'cod'}
-                  onChange={() => setPaymentMethod('cod')}
+                  value={PAYMENT_METHODS[0]}
+                  checked={paymentMethod === PAYMENT_METHODS[0]}
+                  onChange={() => setPaymentMethod(PAYMENT_METHODS[0])}
                 />
                 <div>
                   <div style={{ fontWeight: 700, color: 'var(--text-main)' }}>Cash on Delivery (COD)</div>
@@ -156,18 +160,18 @@ export default function Checkout() {
                   alignItems: 'center',
                   gap: 12,
                   padding: '12px 16px',
-                  border: `2px solid ${paymentMethod === 'upi' ? 'var(--primary)' : 'var(--border-color)'}`,
+                  border: `2px solid ${paymentMethod === PAYMENT_METHODS[1] ? 'var(--primary)' : 'var(--border-color)'}`,
                   borderRadius: '12px',
                   cursor: 'pointer',
-                  background: paymentMethod === 'upi' ? 'var(--primary-light)' : '#fff',
+                  background: paymentMethod === PAYMENT_METHODS[1] ? 'var(--primary-light)' : '#fff',
                 }}
               >
                 <input
                   type="radio"
                   name="payment"
-                  value="upi"
-                  checked={paymentMethod === 'upi'}
-                  onChange={() => setPaymentMethod('upi')}
+                  value={PAYMENT_METHODS[1]}
+                  checked={paymentMethod === PAYMENT_METHODS[1]}
+                  onChange={() => setPaymentMethod(PAYMENT_METHODS[1])}
                 />
                 <div>
                   <div style={{ fontWeight: 700, color: 'var(--text-main)' }}>Instant UPI (GPay / PhonePe / Paytm)</div>
@@ -197,7 +201,7 @@ export default function Checkout() {
           </div>
           <div className="bill-row">
             <span>Delivery Fee</span>
-            <span>{deliveryFee === 0 ? <strong style={{ color: '#16A34A' }}>FREE</strong> : `₹${deliveryFee}`}</span>
+            <span>{deliveryFee === 0 ? <strong style={{ color: 'var(--success)' }}>FREE</strong> : `₹${deliveryFee}`}</span>
           </div>
           <div className="bill-row">
             <span>Taxes & Charges</span>
@@ -210,18 +214,23 @@ export default function Checkout() {
           </div>
 
           {error && (
-            <div style={{ color: '#DC2626', fontSize: 13, fontWeight: 600, marginTop: 12 }}>
-              {error}
+            <div className="alert alert-error" role="alert" style={{ marginTop: 12 }}>
+              <span className="alert-icon"><IconAlert size={16} /></span>
+              <span>{error}</span>
             </div>
           )}
 
-          <button
+          <Button
             type="submit"
-            className="checkout-btn"
+            variant="primary"
+            size="lg"
+            block
             disabled={placing}
+            style={{ marginTop: 18 }}
+            iconRight={<IconArrowRight size={16} />}
           >
-            {placing ? 'Placing Order...' : `Place Order (₹${grandTotal})`}
-          </button>
+            {placing ? 'Placing order...' : 'Place order'}
+          </Button>
         </div>
       </form>
     </div>

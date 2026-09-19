@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
+import { IconAlert, IconCheck, IconClose, IconInfo } from '../components/icons.jsx';
 
 const ToastContext = createContext(null);
 
@@ -29,19 +30,14 @@ export function ToastProvider({ children }) {
       <div className="toast-container" aria-live="polite">
         {toasts.map((toast) => (
           <div key={toast.id} className={`toast toast-${toast.type}`}>
-            <span className="toast-icon">
-              {toast.type === 'success' && '✓'}
-              {toast.type === 'error' && '✕'}
-              {toast.type === 'warning' && '⚠'}
-              {toast.type === 'info' && 'ℹ'}
-            </span>
+            <span className="toast-icon">{toast.type === 'success' && <IconCheck size={16} />}{toast.type === 'error' && <IconClose size={16} />}{toast.type === 'warning' && <IconAlert size={16} />}{toast.type === 'info' && <IconInfo size={16} />}</span>
             <span className="toast-msg">{toast.message}</span>
             <button
               className="toast-close"
               onClick={() => removeToast(toast.id)}
               aria-label="Close notification"
             >
-              &times;
+              <IconClose size={14} />
             </button>
           </div>
         ))}

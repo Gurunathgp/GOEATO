@@ -1,38 +1,42 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
-
-const DEFAULT_FOOD_IMG = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=200&q=80';
+import Button from '../components/Button.jsx';
+import EmptyState from '../components/EmptyState.jsx';
+import { IconArrowRight, IconBasket, IconClose } from '../components/icons.jsx';
+import { DEFAULT_IMAGES, PRICING, TOAST_DURATIONS } from '../config/constants.js';
 
 export default function Cart() {
   const { items, setQty, remove, total, clear } = useCart();
   const { addToast } = useToast();
   const navigate = useNavigate();
 
-  const deliveryFee = total > 400 ? 0 : 35;
-  const platformFee = items.length > 0 ? 5 : 0;
-  const taxes = Math.round(total * 0.05);
+  const deliveryFee = total > PRICING.FREE_DELIVERY_THRESHOLD ? 0 : PRICING.DELIVERY_FEE;
+  const platformFee = items.length > 0 ? PRICING.PLATFORM_FEE : 0;
+  const taxes = Math.round(total * PRICING.TAX_RATE);
   const grandTotal = total + deliveryFee + platformFee + taxes;
 
   if (!items.length) {
     return (
       <div className="page">
-        <div className="auth-box" style={{ textAlign: 'center', maxWidth: '520px' }}>
-          <div style={{ fontSize: '56px', marginBottom: '16px' }}>🛒</div>
-          <h2>Your Cart is Empty</h2>
-          <p>You haven't added any delicious dishes yet. Explore our top-rated menus and satisfy your cravings!</p>
-          <Link to="/" className="checkout-btn" style={{ textDecoration: 'none', display: 'inline-block' }}>
-            Explore Dishes
-          </Link>
-        </div>
+        <EmptyState
+          icon={<IconBasket size={26} />}
+          title="Your basket is empty"
+          description="Nothing here yet. Explore tonight's menu from local kitchens and add your first dish."
+          action={
+            <Button variant="primary" size="lg" to="/" iconRight={<IconArrowRight size={16} />}>
+              Explore dishes
+            </Button>
+          }
+        />
       </div>
     );
   }
 
   const handleClear = () => {
     clear();
-    addToast('Cart cleared', 'info');
+    addToast('Cart cleared', 'info', TOAST_DURATIONS.MEDIUM);
   };
 
   return (
@@ -61,12 +65,12 @@ export default function Cart() {
               <div key={id} className="cart-item-row">
                 <div className="cart-item-info">
                   <img
-                    src={item.img || DEFAULT_FOOD_IMG}
+                    src={item.img || DEFAULT_IMAGES.FOOD}
                     alt={item.name}
                     className="cart-item-img"
                     onError={(e) => {
                       e.currentTarget.onerror = null;
-                      e.currentTarget.src = DEFAULT_FOOD_IMG;
+                      e.currentTarget.src = DEFAULT_IMAGES.FOOD;
                     }}
                   />
                   <div>
@@ -75,19 +79,20 @@ export default function Cart() {
                   </div>
                 </div>
 
-                <div className="qty-stepper">
+                <div className="qty-stepper" role="group" aria-label={`Quantity controls for ${item.name}`}>
                   <button
                     type="button"
                     onClick={() => (item.qty === 1 ? remove(id) : setQty(id, item.qty - 1))}
-                    aria-label="Decrease quantity"
+                    aria-label={`Decrease quantity of ${item.name}, currently ${item.qty}`}
+                    aria-describedby={`cart-qty-${id}`}
                   >
                     &minus;
                   </button>
-                  <span>{item.qty}</span>
+                  <span id={`cart-qty-${id}`} aria-live="polite" aria-atomic="true">{item.qty}</span>
                   <button
                     type="button"
                     onClick={() => setQty(id, item.qty + 1)}
-                    aria-label="Increase quantity"
+                    aria-label={`Increase quantity of ${item.name}, currently ${item.qty}`}
                   >
                     +
                   </button>
@@ -98,11 +103,12 @@ export default function Cart() {
                 <button
                   type="button"
                   className="toast-close"
-                  style={{ color: '#EF4444' }}
+                  style={{ color: 'var(--danger)' }}
                   onClick={() => remove(id)}
+                  aria-label={`Remove ${item.name} from cart`}
                   title="Remove from cart"
                 >
-                  &times;
+                  <IconClose size={16} />
                 </button>
               </div>
             );
@@ -120,7 +126,7 @@ export default function Cart() {
 
           <div className="bill-row">
             <span>Delivery Fee</span>
-            <span>{deliveryFee === 0 ? <strong style={{ color: '#16A34A' }}>FREE</strong> : `₹${deliveryFee}`}</span>
+            <span>{deliveryFee === 0 ? <strong style={{ color: 'var(--success)' }}>FREE</strong> : `₹${deliveryFee}`}</span>
           </div>
 
           <div className="bill-row">
@@ -139,18 +145,22 @@ export default function Cart() {
           </div>
 
           {deliveryFee > 0 && (
-            <div style={{ background: '#FFF3EB', color: '#FF5200', fontSize: '12px', fontWeight: 700, padding: '8px 12px', borderRadius: '8px', marginTop: '16px' }}>
-              💡 Add items worth ₹{400 - total} more for FREE Delivery!
+            <div style={{ background: 'var(--primary-light)', color: 'var(--primary)', fontSize: '12px', fontWeight: 700, padding: '8px 12px', borderRadius: '8px', marginTop: '16px' }}>
+               Add items worth ₹{PRICING.FREE_DELIVERY_THRESHOLD - total} more for FREE Delivery!
             </div>
           )}
 
-          <button
+          <Button
             type="button"
-            className="checkout-btn"
+            variant="primary"
+            size="lg"
+            block
             onClick={() => navigate('/checkout')}
+            iconRight={<IconArrowRight size={16} />}
+            style={{ marginTop: 18 }}
           >
-            Proceed to Checkout &rarr;
-          </button>
+            Proceed to checkout
+          </Button>
         </div>
       </div>
     </div>

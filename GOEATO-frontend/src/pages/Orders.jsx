@@ -1,15 +1,21 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import api, { unwrapList } from '../api/client';
 import { useSocketListener, useSocket } from '../context/SocketContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
+import { ORDER_STEPS, TOAST_DURATIONS } from '../config/constants.js';
+import Button from '../components/Button.jsx';
+import EmptyState from '../components/EmptyState.jsx';
+import { SkeletonCard } from '../components/SkeletonLoader.jsx';
+import { IconAlert, IconBox, IconCheck, IconClock, IconClose, IconFlame, IconPin, IconTicket } from '../components/icons.jsx';
 
-const STEPS = [
-  { key: 'placed', label: 'Order Placed', icon: '📝' },
-  { key: 'preparing', label: 'Preparing', icon: '🍳' },
-  { key: 'delivering', label: 'On The Way', icon: '🛵' },
-  { key: 'delivered', label: 'Delivered', icon: '🎉' },
-];
+/** Inline SVGs for the tracking stepper, keyed by ORDER_STEPS[].iconKey. */
+const STEP_ICONS = {
+  ticket: <IconTicket size={15} />,
+  flame: <IconFlame size={15} />,
+  box: <IconBox size={15} />,
+  check: <IconCheck size={15} />,
+};
 
 function getStepIndex(status) {
   if (status === 'pending') return 0;
@@ -55,7 +61,7 @@ export default function Orders() {
       return [order, ...prev];
     });
 
-    addToast(`Order #${order._id.slice(-6)} is now ${order.status}!`, 'info', 4000);
+    addToast(`Order #${order._id.slice(-6)} is now ${order.status}!`, 'info', TOAST_DURATIONS.LONG);
   });
 
   if (loading) {
@@ -64,7 +70,7 @@ export default function Orders() {
         <h1 className="section-title">My Orders</h1>
         <div style={{ marginTop: 24 }}>
           {[1, 2].map((n) => (
-            <div key={n} className="skeleton-card" style={{ height: 200, marginBottom: 20 }} />
+            <SkeletonCard key={n} height="200px" style={{ marginBottom: 20 }} />
           ))}
         </div>
       </div>
@@ -79,26 +85,29 @@ export default function Orders() {
           <p className="section-subtitle">Real-time status updates for your food deliveries</p>
         </div>
         <div className="live-indicator" title={isConnected ? 'Real-time WebSocket connected' : 'Connecting to live updates...'}>
-          <div className="live-indicator-dot" style={{ background: isConnected ? '#16A34A' : '#F59E0B' }} />
+          <div className="live-indicator-dot" style={{ background: isConnected ? 'var(--success)' : 'var(--warn)' }} />
           <span>{isConnected ? 'Live Tracking Active' : 'Connecting...'}</span>
         </div>
       </div>
 
       {error && (
-        <div className="admin-order-card" style={{ borderLeft: '4px solid #EF4444' }}>
-          <p style={{ color: '#DC2626' }}>{error}</p>
+        <div className="alert alert-error" role="alert" style={{ marginBottom: 20 }}>
+          <span className="alert-icon"><IconAlert size={16} /></span>
+          <span>{error}</span>
         </div>
       )}
 
       {!orders.length ? (
-        <div className="auth-box" style={{ textAlign: 'center', maxWidth: 520 }}>
-          <div style={{ fontSize: 56, marginBottom: 16 }}>📦</div>
-          <h2>No Orders Placed Yet</h2>
-          <p>You haven't placed any orders yet. Discover delicious dishes and place your first order now!</p>
-          <Link to="/" className="checkout-btn" style={{ textDecoration: 'none', display: 'inline-block' }}>
-            Browse Menu
-          </Link>
-        </div>
+        <EmptyState
+          icon={<IconBox size={26} />}
+          title="No orders yet"
+          description="You haven't placed an order yet. Discover tonight's menu and your first delivery will appear here live."
+          action={
+            <Button variant="primary" size="lg" to="/">
+              Browse the menu
+            </Button>
+          }
+        />
       ) : (
         <div>
           {orders.map((order) => {
@@ -129,8 +138,8 @@ export default function Orders() {
 
                 {/* Visual Order Stepper */}
                 {isCancelled ? (
-                  <div style={{ background: '#FEE2E2', color: '#991B1B', padding: '12px 16px', borderRadius: 8, fontWeight: 700, margin: '20px 0' }}>
-                    ✕ This order has been cancelled.
+                  <div style={{ background: 'var(--danger-bg)', color: 'var(--danger-ink)', padding: '12px 16px', borderRadius: 8, fontWeight: 700, margin: '20px 0' }}>
+                    <IconClose size={15} /> This order has been cancelled.
                   </div>
                 ) : (
                   <div className="order-stepper">
@@ -138,12 +147,12 @@ export default function Orders() {
                       <div
                         className="stepper-progress-fill"
                         style={{
-                          width: `${Math.max(0, (currentStep / (STEPS.length - 1)) * 100)}%`,
+                          width: `${Math.max(0, (currentStep / (ORDER_STEPS.length - 1)) * 100)}%`,
                         }}
                       />
                     </div>
 
-                    {STEPS.map((step, idx) => {
+                    {ORDER_STEPS.map((step, idx) => {
                       const isCompleted = currentStep > idx || order.status === 'delivered';
                       const isActive = currentStep === idx && order.status !== 'delivered';
 
@@ -153,7 +162,7 @@ export default function Orders() {
                           className={`step-node ${isCompleted ? 'completed' : ''} ${isActive ? 'active' : ''}`}
                         >
                           <div className="step-circle">
-                            {isCompleted ? '✓' : step.icon}
+                            {isCompleted ? <IconCheck size={15} /> : (STEP_ICONS[step.iconKey] || <IconClock size={15} />)}
                           </div>
                           <span className="step-label">{step.label}</span>
                         </div>
@@ -179,7 +188,7 @@ export default function Orders() {
 
                     {order.address && (
                       <p style={{ marginTop: 12, fontSize: 13, color: 'var(--text-secondary)' }}>
-                        <strong>📍 Delivery To:</strong> {order.address}
+                        <strong><IconPin size={13} /> Delivery To:</strong> {order.address}
                       </p>
                     )}
                   </div>

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
+import Button from '../components/Button.jsx';
+import { IconAlert, IconCrown, IconUser } from '../components/icons.jsx';
 
 const Login = () => {
   const { login } = useAuth();
@@ -43,8 +45,9 @@ const Login = () => {
         <p>Sign in to track orders, manage your cart, and reorder favorites.</p>
 
         {error && (
-          <div style={{ background: '#FEE2E2', color: '#DC2626', padding: '10px 14px', borderRadius: 8, fontSize: 13, fontWeight: 600, marginBottom: 16 }}>
-            {error}
+          <div className="alert alert-error" role="alert" style={{ marginBottom: 16 }}>
+            <span className="alert-icon"><IconAlert size={16} /></span>
+            <span>{error}</span>
           </div>
         )}
 
@@ -71,9 +74,9 @@ const Login = () => {
             />
           </div>
 
-          <button type="submit" className="auth-submit-btn" disabled={loading}>
-            {loading ? 'Signing In...' : 'Sign In'}
-          </button>
+          <Button type="submit" variant="primary" size="lg" block loading={loading} style={{ marginTop: 10 }}>
+            {loading ? 'Signing in...' : 'Sign in'}
+          </Button>
         </form>
 
         {/* Quick Demo Credentials */}
@@ -88,7 +91,7 @@ const Login = () => {
               style={{ flex: 1, fontSize: 12, padding: '6px' }}
               onClick={() => fillDemo('user@goeato.local', 'User123!')}
             >
-              👤 Customer
+               <IconUser size={15} /> Customer
             </button>
             <button
               type="button"
@@ -96,7 +99,7 @@ const Login = () => {
               style={{ flex: 1, fontSize: 12, padding: '6px' }}
               onClick={() => fillDemo('admin@goeato.local', 'Admin123!')}
             >
-              👑 Admin
+               <IconCrown size={15} /> Admin
             </button>
           </div>
         </div>

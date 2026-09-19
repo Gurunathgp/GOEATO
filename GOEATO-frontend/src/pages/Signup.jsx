@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
+import Button from '../components/Button.jsx';
+import { IconAlert } from '../components/icons.jsx';
 
 const Signup = () => {
   const { signup } = useAuth();
@@ -37,8 +39,9 @@ const Signup = () => {
         <p>Join GoEato for lightning-fast food delivery and exclusive offers.</p>
 
         {error && (
-          <div style={{ background: '#FEE2E2', color: '#DC2626', padding: '10px 14px', borderRadius: 8, fontSize: 13, fontWeight: 600, marginBottom: 16 }}>
-            {error}
+          <div className="alert alert-error" role="alert" style={{ marginBottom: 16 }}>
+            <span className="alert-icon"><IconAlert size={16} /></span>
+            <span>{error}</span>
           </div>
         )}
 
@@ -77,9 +80,9 @@ const Signup = () => {
             />
           </div>
 
-          <button type="submit" className="auth-submit-btn" disabled={loading}>
-            {loading ? 'Creating Account...' : 'Create Account'}
-          </button>
+          <Button type="submit" variant="primary" size="lg" block loading={loading} style={{ marginTop: 10 }}>
+            {loading ? 'Creating account...' : 'Create account'}
+          </Button>
         </form>
 
         <p style={{ marginTop: 24, textAlign: 'center', fontSize: 14 }}>

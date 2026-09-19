@@ -3,35 +3,67 @@
   --primary-hover: #cf3d16;
   --primary-light: #fff0e8;
   --primary-gradient: linear-gradient(135deg, #ef5125 0%, #ff7448 100%);
-  --secondary: #181812;
+  --secondary: #1b1b14;
+  --accent: #d8ff4d;
+  --accent-ink: #1b1b14;
   --secondary-light: #2b2b22;
   
-  --bg-body: #f7f5ee;
-  --bg-surface: #FFFFFF;
-  --bg-glass: rgba(255, 255, 255, 0.88);
-  --bg-dark-glass: rgba(15, 23, 42, 0.92);
+  --bg-body: #f2efe6;
+  --bg-surface: #ffffff;
+  --bg-sunken: #eae6d9;
+  --bg-glass: rgba(250, 248, 241, 0.9);
+  --bg-dark-glass: rgba(27, 27, 20, 0.94);
   
-  --border-color: #E2E8F0;
-  --border-subtle: #F1F5F9;
+  --border-color: #ded9c8;
+  --border-subtle: #ebe7db;
+  --line-strong: #c9c4b5;
+  --border-primary: #ffd8c7;
   
   --text-main: #202018;
   --text-secondary: #605f56;
-  --text-muted: #8b8a80;
+  --text-muted: #6b6a5c;
   
-  --veg-color: #16A34A;
-  --nonveg-color: #DC2626;
+  --ink: #1b1b14;
+  --veg-color: #16a34a;
+  --nonveg-color: #dc2626;
   
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
-  --shadow-md: 0 6px 18px rgba(15, 23, 42, 0.06);
-  --shadow-lg: 0 14px 34px rgba(15, 23, 42, 0.10);
-  --shadow-primary: 0 8px 20px rgba(255, 82, 0, 0.28);
+  --shadow-sm: 0 1px 3px rgba(38, 34, 20, 0.06), 0 1px 2px rgba(38, 34, 20, 0.04);
+  --shadow-md: 0 8px 20px rgba(38, 34, 20, 0.08);
+  --shadow-lg: 0 18px 40px rgba(38, 34, 20, 0.12);
+  --shadow-primary: 0 8px 20px rgba(239, 81, 37, 0.26);
   
   --radius-sm: 8px;
   --radius-md: 14px;
   --radius-lg: 22px;
+  --radius-xl: 30px;
   --radius-full: 9999px;
   
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-display: 'Fraunces', 'Plus Jakarta Sans', Georgia, 'Times New Roman', serif;
+  --font-mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+
+  /* ---- Semantic (status + feedback) ---- */
+  --success: #16a34a;
+  --success-ink: #166534;
+  --success-bg: #dcfce7;
+  --warn: #f59e0b;
+  --warn-ink: #92400e;
+  --warn-bg: #fef3c7;
+  --danger: #dc2626;
+  --danger-ink: #991b1b;
+  --danger-bg: #fee2e2;
+  --info-ink: #1e40af;
+  --info-bg: #dbeafe;
+
+  /* ---- Motion ---- */
+  --dur-1: 140ms;
+  --dur-2: 240ms;
+  --dur-3: 420ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ---- Layout ---- */
+  --dock-space: 132px;
 }
 
 *, *::before, *::after {
@@ -40,19 +72,25 @@
   padding: 0;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   font-family: var(--font-sans);
   background-color: var(--bg-body);
   color: var(--text-main);
   line-height: 1.5;
+  font-optical-sizing: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-image: radial-gradient(rgba(24, 24, 18, 0.035) 1px, transparent 1px);
+  background-image: radial-gradient(rgba(27, 27, 20, 0.04) 1px, transparent 1px);
   background-size: 18px 18px;
 }
 
 input, button, select, textarea {
   font-family: inherit;
+  color: inherit;
 }
 
 a {
@@ -60,18 +98,65 @@ a {
   text-decoration: none;
 }
 
-/* Scrollbar */
+/* --------------------------------------------------------------------------
+   SCROLLBAR (warm ink/paper, no cool slate)
+   -------------------------------------------------------------------------- */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #F1F5F9;
+  background: var(--bg-sunken);
 }
 ::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
+  background: var(--line-strong);
   border-radius: var(--radius-full);
+  border: 2px solid var(--bg-sunken);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
+  background: #aba595;
+}
+
+/* --------------------------------------------------------------------------
+   ACCESSIBILITY BASELINE
+   -------------------------------------------------------------------------- */
+
+/* Keyboard-only focus ring: visible for everyone, invisible for mouse users. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Seven keyframe animations run unconditionally today; disable them on request. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Screen-reader-only helper for icon-only controls and live status text. */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Zero-cost inline icon system (see components/icons.jsx). */
+.icon {
+  flex: none;
+  display: inline-block;
+  vertical-align: -0.15em;
 }

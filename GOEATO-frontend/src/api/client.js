@@ -1,11 +1,14 @@
 import axios from 'axios';
+import { API_CONFIG, STORAGE_KEYS } from '../config/constants.js';
+import { isAuthError, logError } from '../utils/errorHandler.js';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000',
+  timeout: API_CONFIG.DEFAULT_TIMEOUT,
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('goeato_token');
+  const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
     // backward compat with old backend expecting x-auth-token
@@ -17,9 +20,15 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (r) => r,
   (err) => {
-    if (err.response?.status === 401) {
-      localStorage.removeItem('goeato_token');
-      localStorage.removeItem('goeato_user');
+    logError(err, { url: err.config?.url, method: err.config?.method });
+
+    if (isAuthError(err)) {
+      localStorage.removeItem(STORAGE_KEYS.TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.USER);
+      // Optionally redirect to login page
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(err);
   }

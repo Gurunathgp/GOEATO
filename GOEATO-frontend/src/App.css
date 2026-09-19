@@ -1210,6 +1210,60 @@
   100% { transform: translateX(100%); }
 }
 
+.skeleton-pulse {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(241, 245, 249, 0.8), transparent);
+  animation: skeleton-shimmer 1.5s infinite;
+}
+
+.skeleton-text {
+  background: #fff;
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.skeleton-line {
+  background: #e2e8f0;
+  border-radius: 4px;
+  animation: skeleton-shimmer 1.5s infinite;
+}
+
+.skeleton-button {
+  background: #e2e8f0;
+  border-radius: 8px;
+  animation: skeleton-shimmer 1.5s infinite;
+}
+
+.skeleton-image {
+  background: #e2e8f0;
+  border-radius: 8px;
+  animation: skeleton-shimmer 1.5s infinite;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e2e8f0;
+  border-top: 4px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 /* --------------------------------------------------------------------------
    TRUST STATS BAR (below hero)
    -------------------------------------------------------------------------- */
@@ -1522,4 +1576,568 @@
     padding: 6px 12px;
     font-size: 12px;
   }
+}
+
+/* ==========================================================================
+   P0 COHESION LAYER
+   Completes the "Editorial discovery refresh" above. Everything here either
+   (a) removes the leftover cool-slate surfaces that clashed with the warm paper
+   base, or (b) styles the shared primitives introduced in this pass: Button,
+   EmptyState, ReceiptDock and the inline icon system (components/icons.jsx).
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   DISPLAY TYPOGRAPHY — Fraunces for editorial voice, grotesk for interface
+   -------------------------------------------------------------------------- */
+.logo-text,
+.hero-banner h1,
+.section-title,
+.auth-box h2,
+.empty-state-title,
+.rest-name,
+.card-price,
+.bill-total-row,
+.footer-brand h3,
+.receipt-dock-count strong {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+}
+
+.logo-text { font-weight: 900; }
+.hero-banner h1 { font-weight: 700; letter-spacing: -2.4px; }
+.section-title,
+.auth-box h2,
+.empty-state-title,
+.footer-brand h3 { font-weight: 700; }
+.rest-name { font-weight: 600; }
+.card-price { font-weight: 700; }
+
+/* Docket numerals: monospace with tabular figures, like a real kitchen ticket. */
+.order-id,
+.receipt-dock-count,
+.admin-order-card strong {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------------
+   SURFACE + RULE CLEANUP (no more slate blue on cream)
+   -------------------------------------------------------------------------- */
+.user-pill,
+.delivery-time-pill,
+.order-details-grid,
+.skeleton-card,
+.skeleton-text,
+.step-circle {
+  background: var(--bg-sunken);
+}
+
+.user-pill { color: var(--text-main); }
+
+.logout-btn {
+  border-color: var(--border-color);
+  border-radius: var(--radius-full);
+}
+.logout-btn:hover {
+  background: var(--danger-bg);
+  border-color: #f3b6b6;
+  color: var(--danger);
+}
+
+.card-diet-badge { background: rgba(255, 255, 255, 0.94); }
+
+.live-indicator { background: var(--success-bg); color: var(--success-ink); }
+
+.stepper-progress-line { background: var(--border-color); border-radius: var(--radius-full); }
+.stepper-progress-fill { background: var(--primary); border-radius: var(--radius-full); }
+.step-circle { background: var(--bg-surface); border-color: var(--line-strong); color: var(--text-muted); }
+.step-node.completed .step-circle { background: var(--success); border-color: var(--success); }
+.step-node.active .step-circle { background: var(--primary); border-color: var(--primary); }
+
+/* --------------------------------------------------------------------------
+   STATUS BADGES — colour plus a shape cue, so status is never colour-only
+   -------------------------------------------------------------------------- */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: var(--radius-full);
+}
+.status-badge::before {
+  content: '';
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.status-placed { background: var(--warn-bg); color: var(--warn-ink); }
+.status-preparing { background: var(--info-bg); color: var(--info-ink); }
+.status-delivering { background: #e4e2ff; color: #3730a3; }
+.status-delivered { background: var(--success-bg); color: var(--success-ink); }
+.status-cancelled { background: var(--danger-bg); color: var(--danger-ink); }
+
+/* --------------------------------------------------------------------------
+   ALERTS — one class pair replaces the ad-hoc inline error banners
+   -------------------------------------------------------------------------- */
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+.alert-error { background: var(--danger-bg); color: var(--danger-ink); border-color: #f3b6b6; }
+.alert-info { background: var(--primary-light); color: var(--primary-hover); border-color: var(--border-primary); }
+.alert-icon { flex: none; margin-top: 1px; }
+.alert-error .alert-icon { color: var(--danger); }
+.alert-info .alert-icon { color: var(--primary); }
+
+/* --------------------------------------------------------------------------
+   TOASTS — warm ink surface; the reused close button no longer vanishes
+   -------------------------------------------------------------------------- */
+.toast {
+  background: var(--ink);
+  border-radius: var(--radius-md);
+  border-left-width: 4px;
+  border-left-style: solid;
+}
+.toast-success { border-left-color: var(--success); }
+.toast-error { border-left-color: var(--danger); }
+.toast-info { border-left-color: var(--accent); }
+.toast-warning { border-left-color: var(--warn); }
+
+.toast-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 18px;
+  line-height: 1;
+  padding: 2px 5px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: color var(--dur-1) ease, background var(--dur-1) ease;
+}
+/* On light surfaces (search clear, cart remove) it must stay legible. */
+.toast-close:hover { color: var(--danger); background: var(--danger-bg); }
+/* On dark surfaces (toasts) the close button lights up instead. */
+.toast .toast-close:hover { color: #fff; background: transparent; }
+
+/* --------------------------------------------------------------------------
+   SKELETONS — shaped like the content they replace, not blank boxes
+   -------------------------------------------------------------------------- */
+.skeleton-card { background: var(--bg-surface); border-color: var(--border-subtle); }
+.skeleton-card::after,
+.skeleton-pulse {
+  background: linear-gradient(90deg, transparent, rgba(234, 230, 217, 0.8), transparent);
+}
+.skeleton-line,
+.skeleton-button,
+.skeleton-image { background: var(--bg-sunken); border-radius: 6px; }
+.skeleton-text { border-radius: var(--radius-sm); }
+
+.skeleton-plate {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  height: 100%;
+}
+.skeleton-plate-media { height: 150px; border-radius: var(--radius-sm); background: var(--bg-sunken); }
+.skeleton-plate-line { height: 13px; border-radius: 6px; background: var(--bg-sunken); }
+.skeleton-plate-line.short { width: 58%; }
+.skeleton-plate-row { margin-top: auto; display: flex; align-items: center; justify-content: space-between; }
+
+.spinner { border-color: var(--bg-sunken); border-top-color: var(--primary); }
+
+/* --------------------------------------------------------------------------
+   CONTROLS — warm rules and consistent radii
+   -------------------------------------------------------------------------- */
+.form-group input,
+.form-group select,
+.form-group textarea {
+  background: var(--bg-surface);
+  border-color: var(--border-color);
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(239, 81, 37, 0.12);
+}
+
+.veg-toggle { background: var(--bg-surface); border-color: var(--border-color); }
+
+/* Search input for light pages. The hero's dark search box keeps its own style. */
+.field-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 3px 8px 3px 14px;
+  transition: border-color var(--dur-1) ease, box-shadow var(--dur-1) ease;
+}
+.field-search:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(239, 81, 37, 0.12);
+}
+.field-search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14.5px;
+  font-weight: 500;
+  padding: 10px 0;
+  color: var(--text-main);
+}
+.field-search input::placeholder { color: var(--text-muted); }
+.field-search-icon { color: var(--text-muted); }
+.field-search:focus-within .field-search-icon { color: var(--primary); }
+
+.qty-stepper { background: var(--primary); }
+
+/* --------------------------------------------------------------------------
+   HERO ICON DECORATION — replaces the emoji floats (🍕🍔🍜)
+   -------------------------------------------------------------------------- */
+.hero-icon-deco {
+  position: absolute;
+  z-index: 1;
+  color: var(--accent);
+  opacity: 0.18;
+  pointer-events: none;
+  user-select: none;
+  animation: emoji-drift 7s ease-in-out infinite;
+}
+.hero-icon-deco:nth-child(1) { top: 42px; right: 68px; animation-delay: 0s; }
+.hero-icon-deco:nth-child(2) { top: 150px; right: 214px; animation-delay: 1.6s; }
+.hero-icon-deco:nth-child(3) { bottom: 48px; right: 138px; animation-delay: 3.2s; }
+
+/* --------------------------------------------------------------------------
+   BUTTON PRIMITIVE (components/Button.jsx)
+   One definition replaces search-btn / add-action-btn / checkout-btn /
+   auth-submit-btn so focus, sizing and loading behave identically everywhere.
+   -------------------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  white-space: nowrap;
+  transition: background var(--dur-1) ease, color var(--dur-1) ease,
+    border-color var(--dur-1) ease, box-shadow var(--dur-2) var(--ease-out),
+    transform var(--dur-1) var(--ease-out);
+}
+
+.btn:disabled,
+.btn[aria-busy='true'] { opacity: 0.55; cursor: not-allowed; }
+.btn:not(:disabled):hover { transform: translateY(-1px); }
+.btn:not(:disabled):active { transform: translateY(0); }
+
+.btn-sm { padding: 7px 13px; font-size: 12.5px; }
+.btn-md { padding: 10px 18px; font-size: 14px; }
+.btn-lg { padding: 14px 24px; font-size: 16px; }
+.btn-block { width: 100%; }
+
+.btn-primary { background: var(--primary); color: #fff; box-shadow: var(--shadow-primary); }
+.btn-primary:hover { background: var(--primary-hover); }
+
+.btn-accent { background: var(--accent); color: var(--accent-ink); }
+.btn-accent:hover { background: #cbf43a; }
+
+.btn-ink { background: var(--ink); color: #fffdf4; }
+.btn-ink:hover { background: #2e2e24; }
+
+.btn-ghost { background: transparent; color: var(--text-main); border-color: var(--border-color); }
+.btn-ghost:hover { background: var(--bg-sunken); border-color: var(--line-strong); }
+
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover { background: #b91c1c; }
+
+.btn-icon { display: inline-flex; align-items: center; }
+
+.btn-spinner {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+.btn-ghost .btn-spinner,
+.btn-accent .btn-spinner {
+  border-color: rgba(27, 27, 20, 0.25);
+  border-top-color: var(--ink);
+}
+
+/* --------------------------------------------------------------------------
+   EMPTY STATE (components/EmptyState.jsx)
+   -------------------------------------------------------------------------- */
+.empty-state {
+  max-width: 540px;
+  margin: 48px auto;
+  padding: 40px 32px;
+  text-align: center;
+  background: var(--bg-surface);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-lg);
+}
+.empty-state-compact { margin: 18px auto; padding: 26px 22px; }
+
+.empty-state-art {
+  width: 66px;
+  height: 66px;
+  margin: 0 auto 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid var(--border-primary);
+}
+.empty-state-title {
+  font-size: 24px;
+  letter-spacing: -0.6px;
+  color: var(--text-main);
+  margin-bottom: 8px;
+}
+.empty-state-copy {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin-bottom: 22px;
+}
+.empty-state-action { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+/* --------------------------------------------------------------------------
+   RECEIPT DOCK (components/ReceiptDock.jsx) — the signature basket affordance
+   -------------------------------------------------------------------------- */
+.receipt-dock {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  z-index: 200;
+  width: min(640px, calc(100% - 24px));
+  animation: dock-rise var(--dur-3) var(--ease-spring);
+}
+
+@keyframes dock-rise {
+  from { transform: translate(-50%, 26px); opacity: 0; }
+  to { transform: translate(-50%, 0); opacity: 1; }
+}
+
+/* Torn/perforated receipt edge along the top of the dock. */
+.receipt-dock-perf {
+  display: block;
+  height: 9px;
+  background: radial-gradient(circle at 6px 0, transparent 6px, var(--ink) 6.5px) repeat-x;
+  background-size: 12px 9px;
+}
+
+.receipt-dock-inner {
+  background: var(--ink);
+  color: #fffdf4;
+  border-radius: var(--radius-sm) var(--radius-sm) var(--radius-md) var(--radius-md);
+  padding: 13px 18px 15px;
+  box-shadow: 0 20px 44px rgba(27, 27, 20, 0.32);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 18px;
+}
+
+.receipt-dock-meta { display: flex; flex-direction: column; gap: 3px; }
+.receipt-dock-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.receipt-dock-count { font-size: 13.5px; color: #c9c6b7; }
+.receipt-dock-count strong { font-size: 17px; color: #fffdf4; }
+
+.receipt-dock-progress { display: flex; flex-direction: column; gap: 6px; min-width: 148px; }
+.receipt-dock-progress-track {
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 253, 244, 0.16);
+  overflow: hidden;
+}
+.receipt-dock-progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  transition: width var(--dur-3) var(--ease-out);
+}
+.receipt-dock-progress-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #c9c6b7;
+}
+
+.receipt-dock-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  font-size: 13.5px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background var(--dur-1) ease;
+}
+.receipt-dock-btn:hover { background: var(--primary-hover); }
+
+/* Reserve space so the fixed dock never covers page or footer content. */
+.has-receipt-dock .page { padding-bottom: 180px; }
+.has-receipt-dock .site-footer { padding-bottom: 150px; }
+
+/* --------------------------------------------------------------------------
+   MOBILE NAVIGATION
+   Below 768px Discover/Restaurants were previously just `display: none`, which
+   left the header with no navigation. They now collapse into a drawer so every
+   destination stays reachable on small screens.
+   -------------------------------------------------------------------------- */
+.nav-actions { display: flex; align-items: center; gap: 10px; }
+
+.nav-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background var(--dur-1) ease;
+}
+.nav-toggle:hover { background: var(--bg-sunken); }
+
+.nav-drawer {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  right: 0;
+  z-index: 120;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  animation: drawer-in 0.24s var(--ease-out);
+}
+
+@keyframes drawer-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.nav-drawer-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 13px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+  transition: background var(--dur-1) ease, color var(--dur-1) ease;
+}
+.nav-drawer-link:hover,
+.nav-drawer-link.active { background: var(--bg-sunken); color: var(--primary); }
+
+.nav-drawer-sep { height: 1px; margin: 6px 4px; background: var(--border-subtle); }
+
+.nav-drawer-identity {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px 4px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+.nav-drawer-actions { display: flex; flex-direction: column; gap: 8px; padding: 8px 6px 2px; }
+
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  .nav-toggle { display: inline-flex; }
+  .hero-icon-deco { display: none; }
+  .has-receipt-dock .page { padding-bottom: 210px; }
+}
+
+@media (max-width: 640px) {
+  .receipt-dock-inner {
+    grid-template-columns: 1fr auto;
+    gap: 10px 12px;
+    padding: 12px 14px 14px;
+  }
+  .receipt-dock-progress { grid-column: 1 / -1; order: 3; min-width: 0; }
+  .receipt-dock-btn { padding: 11px 13px; font-size: 12.5px; }
+
+  .empty-state { margin: 28px 0; padding: 30px 20px; }
+  .empty-state-title { font-size: 21px; }
+}
+
+/* --------------------------------------------------------------------------
+   INLINE-ICON ALIGNMENT
+   The icon set replaced emoji glyphs inside pills, badges, address chips and
+   toasts, so those containers need to lay the SVG out as a flex item.
+   -------------------------------------------------------------------------- */
+.rest-rating-badge,
+.delivery-time-pill,
+.rest-location,
+.toast-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.trust-stat-icon { color: var(--accent-ink); }
+.rest-location { color: var(--text-secondary); font-size: 13px; }
+
+.rest-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+@media (max-width: 480px) {
+  .cart-nav-label { display: none; }
 }
